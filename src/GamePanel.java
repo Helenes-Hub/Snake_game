@@ -21,12 +21,22 @@ public class GamePanel extends JPanel implements ActionListener {
     Timer timer;
     Random random;
 
+
     public GamePanel() {
         random=new Random();
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
         this.setBackground(Color.BLACK);
         this.setFocusable(true);
         this.addKeyListener(new MyKeyAdapter());
+
+        addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                if (!running) {
+                    restartGame();
+                }
+            }
+        });
+
         startGame();
     }
     public void startGame(){
@@ -59,6 +69,18 @@ public class GamePanel extends JPanel implements ActionListener {
                 g.fillRect(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
             }
         }
+        if(running) {
+            g.setColor(Color.red);
+            g.setFont(new Font("Ink Free", Font.BOLD, 40));
+            FontMetrics metrics = getFontMetrics(g.getFont());
+            g.drawString("Score: " + applesEaten,
+                    (SCREEN_WIDTH - metrics.stringWidth("Score: " + applesEaten)) / 2,
+                    g.getFont().getSize());
+        }
+        else {
+            gameOver(g);
+        }
+
     }
 
     public void newApple(){
@@ -95,37 +117,42 @@ public class GamePanel extends JPanel implements ActionListener {
             if (x[0]==appleX && y[0]==appleY){
                 newApple();
                 bodyParts++;
+                applesEaten++;
             }
         }
     }
 
     public void checkCollision(){
-        //checks head collision with body
+        //collision with body
         for (int i=bodyParts; i>0; i--){
             if (x[0] == x[i] && y[0] == y[i]){
                 System.out.println("1");
                 running=false;
                 break;
             }
-            //check if head touches left border
+            //collision left
             if (x[0]<0){
                 System.out.println("2");
                 running=false;
+                break;
             }
-            //checks if head touches right border
-            if (x[0]> SCREEN_WIDTH){
+            //collision right
+            if (x[0]>= SCREEN_WIDTH){
                 System.out.println("3");
                 running=false;
+                break;
             }
-            //checks if head touches top border
+            //collision top
             if (y[0]<0){
                 System.out.println("4");
                 running=false;
+                break;
             }
-            //check if head touches bottom border
-            if (y[0]> SCREEN_HEIGHT){
+            //collision bottom
+            if (y[0]>= SCREEN_HEIGHT){
                 System.out.println("5");
                 running=false;
+                break;
             }
 
         }
@@ -133,9 +160,6 @@ public class GamePanel extends JPanel implements ActionListener {
             timer.stop();}
     }
 
-    public void gameOver(Graphics g){
-
-    }
     @Override
     public void actionPerformed(ActionEvent e) {
         if (running){
@@ -171,4 +195,39 @@ public class GamePanel extends JPanel implements ActionListener {
 
         }
     }
+    public void gameOver(Graphics g) {
+
+        g.setColor(Color.red);
+        g.setFont(new Font("Ink Free", Font.BOLD, 75));
+        FontMetrics metrics1 = getFontMetrics(g.getFont());
+        g.drawString("Game Over",
+                (SCREEN_WIDTH - metrics1.stringWidth("Game Over")) / 2,
+                SCREEN_HEIGHT / 2 - 50);
+
+
+        g.setFont(new Font("Ink Free", Font.BOLD, 40));
+        FontMetrics metrics2 = getFontMetrics(g.getFont());
+        g.drawString("Score: " + applesEaten,
+                (SCREEN_WIDTH - metrics2.stringWidth("Score: " + applesEaten)) / 2,
+                SCREEN_HEIGHT / 2);
+
+        g.setFont(new Font("Ink Free", Font.PLAIN, 30));
+        g.setColor(Color.white);
+        FontMetrics metrics3 = getFontMetrics(g.getFont());
+        g.drawString("Click anywhere to play again",
+                (SCREEN_WIDTH - metrics3.stringWidth("Click anywhere to play again")) / 2,
+                SCREEN_HEIGHT / 2 + 60);
+    }
+    public void restartGame() {
+        applesEaten = 0;
+        bodyParts = 2;
+        direction = 'R';
+        running = true;
+        for (int i = 0; i < GAME_UNITS; i++) {
+            x[i] = 0;
+            y[i] = 0;
+        }
+        startGame();
+    }
+
 }
